@@ -16,14 +16,20 @@ let specs =
                     
                 describe "addMetaData" [
                     context "with different key" [
-                        subject <| change (ExampleGroup.addMetaData ("b" ++ 43))
+                        (*subject <| change (ExampleGroup.addMetaData ("b" ++ 43))*)
+                        subject (fun ctx ->
+                            ctx.GetSubject<ExampleGroup.T<TestContext>> ()
+                            |> ExampleGroup.addMetaData ("b" ++ 43))
 
                         it "does not clear existing metadata" <| fun c ->
                             c.Subject.Should (haveMetaData "a" 42)
                     ]
 
                     context "with existing key" [
-                        subject <| change (ExampleGroup.addMetaData ("a" ++ 43))
+                        (*subject <| change (ExampleGroup.addMetaData ("a" ++ 43))*)
+                        subject (fun ctx ->
+                            ctx.GetSubject<ExampleGroup.T<TestContext>> ()
+                            |> ExampleGroup.addMetaData ("a" ++ 43))
 
                         it "overwrites the existing value" <| fun c ->
                             c.Subject.Should (haveMetaData "a" 43)
@@ -36,7 +42,10 @@ let specs =
             subject (fun _ -> aPassingExample)
             
             context "with existing metadata" [
-                subject <| change (withExampleMetaData ("a", 42))
+                (*subject <| change (withExampleMetaData ("a", 42))*)
+                subject (fun ctx ->
+                    ctx.GetSubject<Example.T<TestContext>> ()
+                    |> withExampleMetaData("a", 42))
                     
                 describe "addMetaData" [
                     it "does not clear existing metadata" <| fun c ->

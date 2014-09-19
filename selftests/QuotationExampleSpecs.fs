@@ -26,7 +26,7 @@ let specs =
                 createExample (itShould (be.False))
                 
             it "should be name 'should be false'" <| fun ctx ->
-                ctx.Subject.Should (haveExampleNamed "should be false")
+                ctx.Subject.Should (beExample.named "should be false")
 
             it "should succeed when subject is false" <| fun c ->
                 c |> testWithSubject false
@@ -42,7 +42,7 @@ let specs =
                 createExample (itShouldNot (be.True))
                 
             it "should be name 'should not be true'" <| fun ctx ->
-                ctx.Subject.Should (haveExampleNamed "should not be true")
+                ctx.Subject.Should (beExample.named "should not be true")
 
             it "should succeed when subject is false" <| fun c ->
                 c |> testWithSubject false
@@ -59,7 +59,7 @@ let specs =
                    
             it "should have name 'should have length equal 1'" <| fun c ->
                 c.Subject.Should 
-                    (haveExampleNamed "should have length to equal 1")
+                    (beExample.named "should have length to equal 1")
 
             it "should pass when given a collection with one element" <| fun c ->
                 c |> testWithSubject ["dummy"]

@@ -12,6 +12,9 @@ let clearCallList _ = callList := []
 let record name = 
     fun _ -> callList := name::!callList
 
+let withSubject<'T> (ctx:TestContext) (f:'T->unit) =
+    ctx.GetSubject<'T> () |> f
+
 let shouldRecord expected grp =
     grp |> run |> ignore
     actualCallList() |> should (equal expected)
@@ -131,31 +134,41 @@ let specs =
                     |> withSetupCode (fun c -> c?dummy <- disposable)
 
                 it "is disposed after test run" <| fun ctx ->
-                    ctx.GetSubject<ExampleGroup.T> ()
-                    |> withAnExample
-                    |> run |> ignore
+                    
+                    withSubject ctx
+                        (withAnExample >> run >> ignore)
+                    (*|> withAnExample*)
+                    (*|> run |> ignore*)
                     ctx?disposed |> should be.True
 
                 it "is disposed if test fails" <| fun ctx ->
-                    ctx.GetSubject<ExampleGroup.T> ()
-                    |> withExampleCode (fun _ -> failwith "dummy")
-                    |> run |> ignore
+                    withSubject ctx
+                        (withExampleCode (fun _ -> failwith "dummy")
+                         >> run >> ignore)
+                    (*ctx.GetSubject<ExampleGroup.T> ()*)
+                    (*|> withExampleCode (fun _ -> failwith "dummy")*)
+                    (*|> run |> ignore*)
                     ctx?disposed |> should be.True
 
                 it "is disposed if teardown fails" <| fun ctx ->
-                    ctx.GetSubject<ExampleGroup.T> ()
-                    |> withTearDownCode (fun _ -> failwith "dummy")
-                    |> withAnExample
-                    |> run |> ignore
+                    withSubject ctx
+                        (withTearDownCode (fun _ -> failwith "dummy")
+                         >> withAnExample
+                         >> run >> ignore)
+                    (*ctx.GetSubject<ExampleGroup.T> ()*)
+                    (*|> withTearDownCode (fun _ -> failwith "dummy")*)
+                    (*|> withAnExample*)
+                    (*|> run |> ignore*)
                     ctx?disposed |> should be.True
 
                 it "is not disposed in teardown code" <| fun ctx ->
-                    ctx.GetSubject<ExampleGroup.T> ()
-                    |> withTearDownCode (fun _ -> 
-                        let disposed : bool = ctx?disposed
-                        ctx?disposedDuringTearDown <- disposed)
-                    |> withAnExample
-                    |> run |> ignore
+                    (*ctx.GetSubject<ExampleGroup.T> ()*)
+                    withSubject ctx
+                       (withTearDownCode (fun _ -> 
+                            let disposed : bool = ctx?disposed
+                            ctx?disposedDuringTearDown <- disposed)
+                        >> withAnExample
+                        >> run >> ignore)
                     ctx?disposedDuringTearDown |> should be.False
             ]
         ]

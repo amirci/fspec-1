@@ -8,25 +8,33 @@ open ExampleGroup
 let pass = fun _ -> ()
 let fail = fun _ -> raise (AssertionError { Message = "failed" })
 
-let anExampleNamed name = Example.create name pass
-let anExampleWithCode = Example.create "dummy"
+let createExample = Example.create<TestContext>
+let createExampleGroup name : ExampleGroup.T<TestContext> =
+    ExampleGroup.create<TestContext> name
+
+let anExampleNamed name = createExample name pass
+let anExampleWithCode = createExample "dummy"
 let aPassingExample = anExampleWithCode pass
 let aFailingExample = anExampleWithCode fail
 let aPendingExample = anExampleWithCode pending
 let anExample = aPassingExample
 let anExceptionThrowingExample = anExampleWithCode (fun _ -> raise (new System.Exception()))
 
-let withExampleMetaData md = TestDataMap.create [md] |> Example.addMetaData
+let withExampleMetaData md (ex:Example.T<TestContext>) = 
+    let data = TestDataMap.create [md] 
+    Example.addMetaData data ex
 let anExampleWithMetaData data = aPassingExample |> withExampleMetaData data
 
 let aSlowExample = anExampleWithMetaData("slow", true)
 let aFocusedExample = anExampleWithMetaData("focus", true)
 
 // Example group building helpers
-let anExampleGroupNamed = ExampleGroup.create
+let anExampleGroupNamed = createExampleGroup
 let anExampleGroup = anExampleGroupNamed "dummy"
 
-let withMetaData data = TestDataMap.create [data] |> ExampleGroup.addMetaData
+let withMetaData data (grp:ExampleGroup.T<TestContext>) = 
+    let data = TestDataMap.create [data] 
+    ExampleGroup.addMetaData data grp
 let withSetupCode = ExampleGroup.addSetup
 let withTearDownCode = ExampleGroup.addTearDown
 
@@ -55,7 +63,7 @@ let run exampleGroup =
 // ---- Custom matchers ----
 
 let haveMetaData k v =
-    let f a =
+    let f (a:ExampleGroup.T<TestContext>) =
         let x =
             a.MetaData |> TestDataMap.tryGet k
         match x with

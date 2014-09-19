@@ -4,10 +4,10 @@ open Matchers
 let pending = fun _ -> raise PendingError
 
 type Operation =
-    | AddExampleOperation of Example.T
-    | AddExampleGroupOperation of ExampleGroup.T
-    | AddSetupOperation of TestFunc
-    | AddTearDownOperation of TestFunc
+    | AddExampleOperation of Example.T<TestContext>
+    | AddExampleGroupOperation of ExampleGroup.T<TestContext>
+    | AddSetupOperation of TestFunc<TestContext>
+    | AddTearDownOperation of TestFunc<TestContext>
     | MultipleOperations of Operation list
     | AddMetaDataOperation of string*obj
     static member ApplyMetaData metaData op =
@@ -24,7 +24,7 @@ let it name func = AddExampleOperation <| Example.create name func
 let exampleFromMatcher<'T> matchType (matcher : Matcher<'T>) =
     Example.create 
         (sprintf "should %s" (matcher.MessageFor matchType))
-        (fun ctx -> ctx.Subject.Apply (performMatch matchType matcher))
+        (fun (ctx:TestContext) -> ctx.Subject.Apply (performMatch matchType matcher))
     |> AddExampleOperation
 
 let itShould<'T> = exampleFromMatcher<'T> Should

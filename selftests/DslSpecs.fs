@@ -14,10 +14,10 @@ let setGroup x =
         | AddExampleGroupOperation g -> g
         | _ -> failwith "error"
 
-let getSetups grp = grp.Setups
-let getTearDowns grp = grp.TearDowns
-let getExamples grp = grp.Examples
-let getChildGroups grp = grp.ChildGroups
+let getSetups (grp:ExampleGroup.T<TestContext>) = grp.Setups
+let getTearDowns (grp:ExampleGroup.T<TestContext>) = grp.TearDowns
+let getExamples (grp:ExampleGroup.T<TestContext>) = grp.Examples
+let getChildGroups (grp:ExampleGroup.T<TestContext>) = grp.ChildGroups
 
 let itBehavesLikeAGroupWithChildGroup name =
     behavior [
@@ -45,7 +45,7 @@ let specs =
 
             it "should have one example named 'Test'" <| fun ctx ->
                 ctx.Subject.Apply getExamples
-                |> should (have.atLeastOneElement (haveExampleNamed "Test"))
+                |> should (have.atLeastOneElement (beExample.named "Test"))
         ]
 
         context "a 'Describe' statement inside a 'Describe' statement" [
@@ -94,8 +94,9 @@ let specs =
                      describe "group" [])
 
                 it "should store the meta data on the example group" <| fun c ->
-                    let grp = c.GetSubject<ExampleGroup.T> ()
-                    grp.MetaData?answer |> should (be.equalTo 42)
+                    c.Subject.Should (beExampleGroup.withMetaData "answer" (be.equalTo 42))
+                    (*let grp = c.GetSubject<ExampleGroup.T> ()*)
+                    (*grp.MetaData?answer |> should (be.equalTo 42)*)
             ]
 
             context "child group has meta data applied" [

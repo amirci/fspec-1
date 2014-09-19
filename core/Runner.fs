@@ -21,8 +21,8 @@ module Runner =
     open Configuration
 
     type SingleExample = {
-        Example : Example.T
-        ContainingGroups : ExampleGroup.T list }
+        Example : Example.T<TestContext>
+        ContainingGroups : ExampleGroup.T<TestContext> list }
             
     let runMany ctx = List.rev >> List.iter (fun x -> x ctx)
     let rec performSetup groupStack ctx =
@@ -46,10 +46,10 @@ module Runner =
         let metaData = metaDataStack |> List.fold TestDataMap.merge TestDataMap.Zero
         use context = metaData |> TestContextImpl.create
         try
-            performSetup groupStack context
+            performSetup groupStack (context :> TestContext)
             example |> Example.run context
         finally
-            performTearDown groupStack context
+            performTearDown groupStack (context :> TestContext)
 
     let execExample x =
         try
@@ -62,7 +62,7 @@ module Runner =
 
     let doRun exampleGroup reporter report =
         let rec run groupStack report =
-            let runExample (example:Example.T) =
+            let runExample (example:Example.T<TestContext>) =
                 { Example = example;
                   ContainingGroups = groupStack }
                 |> execExample

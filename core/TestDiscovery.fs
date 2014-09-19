@@ -16,8 +16,8 @@ let getSpecsFromAssembly (assembly : Assembly) =
         | :? Operation as o ->
             exampleGroupFromOp o 
             |> Option.bind (fun x -> Some [x])
-        | :? ExampleGroup.T as g -> Some [g]
-        | :? List<ExampleGroup.T> as g -> Some g
+        | :? ExampleGroup.T<TestContext> as g -> Some [g]
+        | :? List<ExampleGroup.T<TestContext>> as g -> Some g
         | :? List<Operation> as l -> Some (l |> List.choose exampleGroupFromOp)
         | _ -> None
         

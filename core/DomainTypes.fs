@@ -87,7 +87,7 @@ type TestContext() =
     static member (?) (self:TestContext,name) = self.Get name 
     static member (?<-) (self:TestContext,name,value) = self.Set name value 
 
-type TestFunc = TestContext -> unit
+type TestFunc<'TCtx> = 'TCtx -> unit
 
 type ExampleDescriptor = {
     Name: string
@@ -96,30 +96,30 @@ type ExampleDescriptor = {
 
 module Example =
     [<ReferenceEqualityAttribute>]
-    type T = {
+    type T<'TCtx> = {
         Name: string; 
-        Test: TestFunc;
+        Test: TestFunc<'TCtx>
         MetaData: TestDataMap.T
     }
-    let create name test = { Name = name; Test = test; MetaData = TestDataMap.Zero }
-    let addMetaData data ex : T = { ex with Name = ex.Name; MetaData = ex.MetaData.Merge data }
-    let run context example = example.Test context
+    let create<'T> name test : T<'T> = { Name = name; Test = test; MetaData = TestDataMap.Zero }
+    let addMetaData data (ex:T<TestContext>) = { ex with Name = ex.Name; MetaData = ex.MetaData.Merge data }
+    let run context (example:T<TestContext>) = example.Test context
     let hasMetaData name ex = ex.MetaData.ContainsKey name
     let getMetaData ex = ex.MetaData
     let getDescriptor ex : ExampleDescriptor = { Name = ex.Name; MetaData = ex.MetaData }
 
 module ExampleGroup =
     [<ReferenceEqualityAttribute>]
-    type T = {
+    type T<'TCtx> = {
         Name: string
-        Examples: Example.T list;
-        Setups: TestFunc list;
-        TearDowns: TestFunc list;
-        ChildGroups : T list;
+        Examples: Example.T<'TCtx> list;
+        Setups: TestFunc<'TCtx> list;
+        TearDowns: TestFunc<'TCtx> list;
+        ChildGroups : T<'TCtx> list;
         MetaData : TestDataMap.T
         }
 
-    let create name = { 
+    let create<'T> name : T<'T> = { 
         Name = name;
         Examples = [];
         Setups = [];
@@ -131,7 +131,7 @@ module ExampleGroup =
     let addSetup setup grp = { grp with Setups = setup::grp.Setups }
     let addTearDown tearDown grp = { grp with TearDowns = tearDown::grp.TearDowns }
     let addChildGroup child grp = { grp with ChildGroups = child::grp.ChildGroups }
-    let addMetaData data grp : T = { grp with Name = grp.Name; MetaData = grp.MetaData.Merge data }
+    let addMetaData data grp = { grp with Name = grp.Name; MetaData = grp.MetaData.Merge data }
     let foldExamples folder grp state = grp.Examples |> List.rev |> List.fold folder state
     let foldChildGroups folder grp state = grp.ChildGroups |> List.rev |> List.fold folder state
     let empty grp = match (grp.ChildGroups, grp.Examples) with
