@@ -36,7 +36,7 @@ nugets_pack :pack => ['output/pkg', :versioning, :build] do |p|
   p.out = 'output/pkg'
   p.exe = 'nuget.exe'
   p.with_metadata do |m|
-    m.version = ENV['NUGET_VERSION']
+    m.version = ENV['FORMAL_VERSION']
     m.authors = 'Peter Stroiman'
     m.license_url = 'https://raw.githubusercontent.com/PeteProgrammer/fspec/master/LICENSE'
     m.project_url = 'https://github.com/PeteProgrammer/fspec'
