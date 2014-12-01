@@ -1,2 +1,3 @@
 source 'https://rubygems.org'
-gem 'albacore', '2.0.0'
+gem 'nokogiri', '1.6.1'
+gem 'albacore'
